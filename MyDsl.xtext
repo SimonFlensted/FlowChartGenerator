@@ -1,0 +1,57 @@
+grammar org.xtext.example.mydsl1.MyDsl with org.eclipse.xtext.common.Terminals
+
+generate myDsl "http://www.xtext.org/example/mydsl1/MyDsl"
+
+Chart:
+    inputNode=InputNode nodes+=Node* relations+=Relation*;
+    
+InputNode:
+    'InputNode' name=ID
+    'Title' title=STRING
+    function=Function
+    relations=Relationships 
+;
+
+Node:
+    'Node' name=ID
+    'Title' title=STRING
+    function=Function?
+    relations=Relationships?
+    
+;
+Function:
+    'Function' Exp
+;
+Relationships:
+    'Relationships' left=[Relation] (',' right=[Relation])?
+;
+Relation:
+	'Relation'
+    name=ID
+    'to' node=[Node]
+    'Constraint' constraint=Constraint
+;
+Constraint:
+    'Input' ({lt} '<' | {gt} '>'| {eq} '='| {ltEq}'<=' | {gtEq} '>=') right=Exp
+;
+Exp returns Expression:
+    Factor({Exp.left=current} operator=ExpOpPlusMinus right=Factor)*
+;
+Factor returns Expression:
+    Primary ({Factor.left=current} operator=ExpOpMultDiv right=Primary)*
+;
+ExpOpMultDiv:
+    {Mult} '*' | {Div} '/'    
+;
+ExpOpPlusMinus:
+    {Plus} '+' | {Minus} '-'
+;
+Primary:
+    Number | Parenthesis
+;
+Parenthesis:
+    '(' exp=Exp ')'
+;
+Number:
+    value=INT
+;
