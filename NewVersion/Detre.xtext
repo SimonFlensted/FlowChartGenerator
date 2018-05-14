@@ -1,0 +1,64 @@
+grammar org.xtext.example.mydsl1.MyDsl with org.eclipse.xtext.common.Terminals
+
+generate myDsl "http://www.xtext.org/example/mydsl1/MyDsl"
+
+Chart:
+	{Chart}
+	name=ID
+    inputNode=InputNode nodes+=Node* relations+=Relation*;
+    
+InputNode returns BasicNode:
+	{InputNode}
+    'InputNode' name=ID
+    'Title' title=STRING
+    'Function' inputFunction=Exp
+    relations=Relationships 
+;
+
+Node returns BasicNode:
+	{Node}
+    'Node' name=ID
+    'Title' title=STRING
+    ('Function' function=BasicExp)?
+    relations=Relationships?   
+;
+
+Relationships:
+    'Relationships{'  left=Relation (',' right=Relation)? '}'
+;
+Relation:
+    'To' node=[Node]
+    'Constraint' constraint=Constraint
+;
+Constraint:
+    'Output' left=('<' | '>'| '='|'<=' | '>=') right=Exp
+;
+
+BasicExp:
+	{BasicExp} left=Input right=Exp
+;
+
+Input:
+	'Input' sign=('+'|'-'|'*'|'/') 
+;
+
+Exp returns Expression:
+	Factor (('+' {Plus.left=current} | '-' {Minus.left=current}) right=Factor)*
+;
+
+Factor returns Expression:
+	Primary (('*' {Mult.left=current} | '/' {Div.left=current}) right=Primary)*	
+;
+
+Primary returns Expression:
+	Number | Parenthesis 
+;
+
+Parenthesis returns Expression:
+	'(' Exp ')'
+;
+
+Number returns Expression:
+	{Num} value=INT
+;
+
